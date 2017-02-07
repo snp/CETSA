@@ -1,0 +1,42 @@
+Package: rcetsa
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.1.0
+Author: Alexey L. Chernobrovkin
+Maintainer: Alexey L. Chernobrovkin <chernobrovkin@gmail.com>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+Depends:
+    R (>= 3.3),
+    dplyr,
+    tidyr,
+    ggplot2,
+    readr
+Imports:
+    doParallel,
+    foreach,
+    futile.logger,
+    ggplot2,
+    grDevices, 
+    gridExtra,
+    grid,
+    knitr,
+    limma,
+    MASS,
+    nls2,
+    openxlsx (>= 2.4.0),
+    parallel,
+    RColorBrewer,
+    RCurl,
+    reshape2,
+    rmarkdown,
+    sme,
+    splines,
+    stats,
+    stringr,
+    utils,
+    VennDiagram,
+    VGAM
