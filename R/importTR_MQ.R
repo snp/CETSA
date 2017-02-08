@@ -8,6 +8,7 @@ importTR_MQ <- function(proteinGroups="proteinGroups.txt",
   get_temp <- function(x, t=temperatures){sapply(x, function(xx){t[xx]})}
   # Read datafile
   data <- read_tsv(proteinGroups) %>%
+    mutate_("id" = sprintf("`%s`", idVar)) %>%
     gather(Sample, Value, matches(sprintf("^%s (\\d) (.+)$", qPrefix))) %>%
     mutate(
       Channel = as.numeric(sub(sprintf("^%s (\\d) (.+)$", qPrefix), "\\1", Sample)),
@@ -22,9 +23,5 @@ importTR_MQ <- function(proteinGroups="proteinGroups.txt",
     full_join(lowT) %>%
     filter(lowT > 0) %>%
     mutate(Value=Value/lowT)
-  # data %>%
-  #   group_by(Sample, Temperature) %>%
-  #   summarize(total=median(Value)) %>%
-  #   ggplot(aes(x=factor(Temperature),y=total, fill=Sample)) + geom_bar(stat='identity', position='dodge')
   return(data %>% select(-contains("Reporter")) %>% select(-contains("peptides")))
 }
