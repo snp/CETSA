@@ -1,23 +1,28 @@
-normalizeTR <- function(data, limits=list("low"=c(42,0.8), "high"=c(62,0.2))){
+normalizeTR <- function(data, limits=list("low"=c(42,0.8), "high"=c(60,0.2))){
   lowPass <- data %>%
     filter(Temperature <= limits$low[1]) %>%
     group_by(Sample, id) %>%
     summarise(minVal = min(Value))
 #    filter(minVal > limits$low[2])
+
   highPass <- data %>%
     filter(Temperature >= limits$high[1]) %>%
     group_by(Sample, id) %>%
     summarise(maxVal = max(Value))
 #    filter(maxVal < limits$high[2])
-  data %>%
-    full_join(inner_join(lowPass, highPass)) %>%
-    filter(minVal > limits$low[2], maxVal < limits$high[2]) %>%
-    group_by(Sample, Temperature) %>%
-    summarize(total=mean(Value)) %>%
-    ggplot(aes(x=factor(Temperature),y=total, fill=Sample)) + geom_bar(stat='identity', position='dodge')
+
+  lowPass %>%
+    full_join(highPass) %>%
+    mutate(good=(minVal > limits$low[2]) & (maxVal < limits$high[2])) %>%
+    group_by(id) %>%
+    summarize(score=sum(good)) %>%
+    filter(score==2) -> good_proteins
+
+
   models <- data %>%
     full_join(inner_join(lowPass, highPass)) %>%
     filter(minVal > limits$low[2], maxVal < limits$high[2]) %>%
+    filter(id %in% good_proteins$id) %>%
     group_by(Sample, Temperature) %>%
     summarize(total=mean(Value)) %>%
     do(

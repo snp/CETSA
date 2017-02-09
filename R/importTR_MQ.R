@@ -9,6 +9,7 @@ importTR_MQ <- function(proteinGroups="proteinGroups.txt",
   # Read datafile
   data <- read_tsv(proteinGroups) %>%
     mutate_("id" = sprintf("`%s`", idVar)) %>%
+    mutate(id = sub(";.*","", id)) %>%
     gather(Sample, Value, matches(sprintf("^%s (\\d) (.+)$", qPrefix))) %>%
     mutate(
       Channel = as.numeric(sub(sprintf("^%s (\\d) (.+)$", qPrefix), "\\1", Sample)),
