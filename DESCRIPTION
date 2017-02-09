@@ -1,42 +1,26 @@
 Package: rcetsa
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Analyze cellular thermal shift assay (CETSA) experiments
 Version: 0.1.0
 Author: Alexey L. Chernobrovkin
 Maintainer: Alexey L. Chernobrovkin <chernobrovkin@gmail.com>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: Analyze cellular thermal shift assay (CETSA) mass-spec experiments with varying
+    temperatures (TR)
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
 Depends:
     R (>= 3.3),
+    gridExtra,
     dplyr,
     tidyr,
     ggplot2,
-    readr
+    readr,
+    broom
 Imports:
-    doParallel,
-    foreach,
-    futile.logger,
-    ggplot2,
-    grDevices, 
-    gridExtra,
-    grid,
+    multidplyr,
     knitr,
-    limma,
-    MASS,
     nls2,
-    openxlsx (>= 2.4.0),
-    parallel,
-    RColorBrewer,
-    RCurl,
-    reshape2,
-    rmarkdown,
-    sme,
-    splines,
     stats,
     stringr,
     utils,
-    VennDiagram,
-    VGAM

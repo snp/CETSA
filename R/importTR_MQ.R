@@ -1,11 +1,8 @@
 importTR_MQ <- function(proteinGroups="proteinGroups.txt",
                         idVar="Majority protein IDs",
-                        controls,
-                        treatments,
                         qPrefix="Reporter intensity corrected",
                         temperatures=c(37,41,44,47,50,53,57,61,64,67)){
 
-  get_temp <- function(x, t=temperatures){sapply(x, function(xx){t[xx]})}
   # Read datafile
   data <- read_tsv(proteinGroups) %>%
     mutate_("id" = sprintf("`%s`", idVar)) %>%
