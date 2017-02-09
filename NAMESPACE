@@ -1,8 +1,8 @@
 exportPattern("^[[:alpha:]]+")
-importFrom("stats", "as.formula", "filter", "na.exclude", "nls",
+importFrom("stats", "as.formula",  "na.exclude", "nls",
              "predict", "runif", "sigma")
 import(ggplot2)
-import(gridExtra, except=c('select'))
+import(gridExtra, except=c('combine'))
 import(dplyr)
 import(tidyr)
 import(readr)
