@@ -41,47 +41,8 @@ analyzeTR <- function(filename = "proteinGroups.txt",
   fitted <-
     fitPeptides(normdata, plotCurves = plotCurves, resultPath = resultPath)
   save(fitted, file = file.path(resultPath, "fitted.RData"))
-  fitted %>%
-    gather(Measure, Value, estimate:p.value) %>%
-    unite(temp, term, Measure) %>%
-    spread(temp, Value) -> gathered
-  gathered %>%
-    group_by(id) %>%
-    do({
-      pid <- unique(.$id)
-      pdata <- .
-      vdata <- pdata %>% filter(Sample %in% vehicle)
-      tdata <- pdata %>% filter(Sample %in% treatment)
-      ret <- data.frame()
-      if ((nrow(vdata) > 0) & (nrow(tdata) > 0))
-        ret <- data.frame(
-          id = pid,
-          sigma_vehicle = mean(vdata$sigma),
-          sigma_treatment = mean(tdata$sigma),
-          N_vehicle = nrow(vdata),
-          N_treatment = nrow(tdata),
-          Tm_vehicle = mean(vdata$Tm_estimate),
-          Tm_vehicle_se = min(vdata$Tm_std.error),
-          Tm_treatment = mean(tdata$Tm_estimate),
-          Tm_treatment_se = min(tdata$Tm_std.error),
-          Tm_diff = mean(tdata$Tm_estimate) - mean(vdata$Tm_estimate),
-          Tm_se = max(c(
-            vdata$Tm_std.error, tdata$Tm_std.error
-          )),
-          Pl_vehicle = mean(vdata$Pl_estimate),
-          Pl_treatment = mean(tdata$Pl_estimate),
-          Pl_diff = mean(tdata$Pl_estimate) - mean(vdata$Pl_estimate),
-          Pl_se = max(c(
-            vdata$Pl_std.error, tdata$Pl_std.error
-          )),
-          b_vehicle = mean(vdata$b_estimate),
-          b_treatment = mean(tdata$b_estimate),
-          b_se = max(c(
-            vdata$b_std.error, tdata$b_std.error
-          ))
-        )
-      ret
-    }) -> result
+
+  result <- summarizeTR(fitted, vehicle=vehicle, treatment=treatment)
 
   result %>% write_csv(file.path(resultPath, "result_all.csv"))
   save(result, file = file.path(resultPath, "result.RData"))
