@@ -18,9 +18,7 @@ Depends:
 Imports:
     broom,
     gridExtra,
-    multidplyr,
     knitr,
-    nls2,
     stats,
     stringr,
     utils,
