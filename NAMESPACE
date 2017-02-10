@@ -2,7 +2,7 @@ exportPattern("^[[:alpha:]]+")
 importFrom("stats", "as.formula",  "na.exclude", "nls",
              "predict", "runif")
 import(ggplot2)
-import(gridExtra, except=c('combine'))
+import(gridExtra)
 import(dplyr)
 import(tidyr)
 import(readr)
