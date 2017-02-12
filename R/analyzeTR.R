@@ -22,10 +22,12 @@ analyzeTR <- function(filename = "proteinGroups.txt",
                       plotCurves = TRUE,
                       idVar = "Majority protein IDs",
                       qPrefix = "Reporter intensity corrected",
-                      temperatures = c(37, 41, 44, 47, 50, 53, 57, 61, 64, 67)) {
+                      temperatures = c(37, 41, 44, 47, 50, 53, 57, 61, 64, 67),
+                      resultColumns = c("Protein names", "Gene names", "Unique peptides")) {
   if (!dir.exists(resultPath))
     dir.create(resultPath, recursive = TRUE)
 
+  message("Reading data from ", filename)
   data <- importTR_MQ(
     proteinGroups = filename,
     idVar = idVar,
@@ -35,15 +37,25 @@ analyzeTR <- function(filename = "proteinGroups.txt",
 
   save(data, file = file.path(resultPath, "data.RData"))
   #data <- importTR_MQ("../TPPQC/NTUB1P_MTX/peptides_M28.txt", idVar = "Sequence", qPrefix="Reporter intensity corrected")
+
+  message("Normalizing data")
   normdata <-
-    normalizeTR(data, limits = list("low" = c(42, 0.8), "high" = c(62, 0.2)))
+    normalizeTR(data, limits = list("low" = c(42, 0.8), "high" = c(60, 0.2)))
   save(normdata, file = file.path(resultPath, "normdata.RData"))
+
+  message("Fitting individual proteins")
   fitted <-
     fitPeptides(normdata, plotCurves = plotCurves, resultPath = resultPath)
   save(fitted, file = file.path(resultPath, "fitted.RData"))
 
+  message("Summarizing results")
   result <- summarizeTR(fitted, vehicle=vehicle, treatment=treatment)
 
+  result <- data[,c("id", resultColumns)] %>%
+    distinct(id, .keep_all = TRUE) %>%
+    full_join(result, by='id')
+
+  message("Saving results to ", resultPath)
   result %>% write_csv(file.path(resultPath, "result_all.csv"))
   save(result, file = file.path(resultPath, "result.RData"))
 
@@ -62,4 +74,5 @@ analyzeTR <- function(filename = "proteinGroups.txt",
     filter((sigma_treatment + sigma_vehicle) < 0.9) %>%
     ggplot(aes(Tm_diff)) + geom_histogram(binwidth = 0.2)
   ggsave(file.path(resultPath, "Tm_diff_histogram.pdf"), device = 'pdf')
+  message("Done!")
 }

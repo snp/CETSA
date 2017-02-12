@@ -7,7 +7,7 @@ importTR_MQ <- function(proteinGroups="proteinGroups.txt",
   data <- read_tsv(proteinGroups) %>%
     mutate_("id" = sprintf("`%s`", idVar)) %>%
     mutate(id = sub(";.*","", id)) %>%
-    mutate(id = sub("[^a-zA-Z0-9-]*","", id)) %>%
+    mutate(id = gsub("[^a-zA-Z0-9-]+","_", id)) %>%
     gather(Sample, Value, matches(sprintf("^%s (\\d) (.+)$", qPrefix))) %>%
     mutate(
       Channel = as.numeric(sub(sprintf("^%s (\\d) (.+)$", qPrefix), "\\1", Sample)),
@@ -16,11 +16,11 @@ importTR_MQ <- function(proteinGroups="proteinGroups.txt",
   # Calculate ratios from reporter intensities
   data %>%
     filter(Temperature<42) %>%
-    group_by_("Sample", sprintf("`%s`", idVar)) %>%
+    group_by(Sample, id) %>%
     summarize(lowT = mean(Value)) -> lowT
   data <- data %>%
-    full_join(lowT) %>%
-    filter(lowT > 0) %>%
-    mutate(Value=Value/lowT)
-  return(data %>% select(-contains("Reporter")) %>% select(-contains("peptides")))
+      full_join(lowT, by=c("Sample","id")) %>%
+      filter(lowT > 0) %>%
+      mutate(Value=Value/lowT)
+  return(data)
 }

@@ -5,7 +5,10 @@ summarizeTR <- function(fitResult,
     gather(Measure, Value, estimate:p.value) %>%
     unite(temp, term, Measure) %>%
     spread(temp, Value) -> gathered
-
+  gathered %>%
+    gather(Measure, Value, -id, -Sample) %>%
+    unite(temp, Sample, Measure) %>%
+    spread(temp, Value) -> regathered
   gathered %>%
     group_by(id) %>%
     do({
@@ -71,5 +74,8 @@ summarizeTR <- function(fitResult,
       }
       ret
     }) -> result
-  result
+  result[,"Tm_padj"] <- p.adjust(result$Tm_pval, method='BH')
+  result[,"Tm_padj_naive"] <- p.adjust(result$Tm_pval_naive, method='BH')
+  result %>%
+    full_join(regathered, by="id")
 }
