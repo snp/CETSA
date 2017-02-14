@@ -1,0 +1,182 @@
+---
+title: "CETSA Report"
+author: "Alexey L. Chernobrovkin"
+date: "2/14/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(CETSA)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+```
+
+## Data overview
+
+Proteins selected for normalization: `r length(unique(normdata$id[normdata$normProtein]))`.
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(broom)
+library(gridExtra)
+normdata %>%
+  filter(normProtein) %>% 
+  group_by(Sample, Temperature) %>%
+  summarize(Value=mean(Value)) -> dd
+normdata %>%
+  filter(normProtein) %>% 
+  group_by(Sample,Temperature) %>%
+  summarize(Value=mean(Value/norm_coef)) -> dd_orig
+
+models <- fitPeptide(dd)
+model <- models$model[[1]]
+rSq <- models$rSquared[[1]]
+ress<-tidy(model)
+ress[,'rSquared'] <- rSq
+
+temps <- unique(pepdata$Temperature)
+xtemps <- seq(min(temps), max(temps), length.out = 100)
+prValue = predict(model, list(x = xtemps))
+pdata <- data_frame(Temperature=xtemps, prValue=prValue, Sample="Model")
+gg1 <-
+  pdata %>% 
+  full_join(dd_orig, by=c('Sample','Temperature')) %>% 
+  ggplot(aes(x = Temperature, color = Sample))  +
+                  geom_line(aes(y=prValue)) +
+                  geom_point(aes(y = Value)) +
+                  labs(x = "Temperature",
+                       y = "Value",
+                       title = sprintf("Normalization, rSquared=%.2f", rSq)) +
+                  theme_minimal()
+gg1 <- gg1 + annotation_custom(
+  tableGrob(
+    ress %>% mutate(
+      V = sprintf("%.2f", estimate),
+      se = sprintf("%.2f", std.error),
+      R2 = sprintf("%.2f", rSquared)
+    ) %>% select(V, se),
+    rows = ress$term
+  ),
+  xmin = 45,
+  xmax = 80,
+  ymin = -0.5,
+  ymax = 2
+)
+gg1
+```
+
+## ress summary
+
+### Melting temperature shift distributions:
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+result %>%
+  filter(Tm_se < Tm_vehicle) %>%
+  filter(Tm_se < Tm_treatment) %>%
+  filter((sigma_treatment + sigma_vehicle) < 0.9) %>%
+  gather(term, value, matches('^Tm.*_diff$')) %>% 
+  ggplot(aes(value, color=term, fill=term)) +  geom_histogram(binwidth = 0.4, alpha=0.2,position='identity') + theme_bw() +
+  labs(x="Tm_diff (Treatment - Vehicle)", y='Count')
+```
+
+### Volcanoo plot
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+result %>%
+  filter(Tm_se < Tm_vehicle) %>%
+  filter(Tm_se < Tm_treatment) %>%
+  filter((sigma_treatment + sigma_vehicle) < 0.9) %>%
+  ggplot(aes(Tm_diff, y=-log10(Tm_pval))) +  geom_point() + theme_bw() 
+```
+
+### Pval vs Pval
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+result %>%
+  filter(Tm_se < Tm_vehicle) %>%
+  filter(Tm_se < Tm_treatment) %>%
+  filter((sigma_treatment + sigma_vehicle) < 0.9) %>%
+  ggplot(aes(x=-log10(Tm_pval), y=-log10(Tm_pval_naive))) +  geom_point() + theme_bw() 
+```
+
+## ress table
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+require(DT)
+result %>%
+  filter(N_vehicle == length(vehicle), N_treatment==length(treatment)) %>% 
+#  filter(Tm_vehicle_pval > 0.01, Tm_treatment_pval > 0.01) %>% 
+#  filter(Tm_pval < 0.1, Tm_pval_naive < 0.4) %>% 
+  arrange(Tm_pval) %>% 
+  select(id, matches("^Tm_.*"), matches(".*_estimate$"), matches("_rSquared$")) -> ress_filtered
+if(T)
+  ress_filtered$id <- sub("(.*)","<a href='plots/\\1.pdf'>\\1</a>", ress_filtered$id)
+ress_filtered %>% 
+           datatable(escape = FALSE) %>% 
+           formatRound(grep('_', names(ress_filtered), value=T),digits=2)
+        
+```
+
+### Melting curves
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=5}
+result %>%
+  filter(N_vehicle == length(vehicle), N_treatment==length(treatment)) %>% 
+  filter(Tm_vehicle_pval > 0.01, Tm_treatment_pval > 0.01) %>% 
+  filter(Tm_pval < 0.01, Tm_pval_naive < 0.4) -> ress_solid
+unique(ress_solid$id) -> protein_hits
+
+normdata %>%
+  filter(id %in% protein_hits) %>% 
+        group_by(id) %>%
+      #      partition(id, cluster=cl) %>%
+      do(plot={
+        pepdata <- .
+        pid <- unique(pepdata$id)
+        models <- fitPeptide(pepdata, startPars)
+        ress <- data_frame()
+        models %>%
+          group_by(Sample) %>%
+          do({
+            m = .$model[[1]]
+            res <- try(tidy(m), silent = TRUE)
+            if (class(res) == 'try-error')
+              res <- data.frame()
+            else{
+              res[, 'sigma'] = .$sigma
+              res[, 'rSquared'] = .$rSquared
+            }
+            res
+          }) %>%
+          ungroup() %>%
+          mutate(id = pid) -> res
+        temps <- unique(pepdata$Temperature)
+        xtemps <- seq(min(temps), max(temps), length.out = 100)
+        pepdata_m =  models %>%
+          group_by(Sample) %>%
+          do(data.frame(
+            Sample = .$Sample,
+            Temperature = xtemps,
+            prValue = predict(.$model[[1]], list(x = xtemps))
+          )) %>%
+          full_join(pepdata, by = c("Sample", "Temperature")) %>%
+          arrange(Sample, Temperature)
+        gp <- pepdata_m %>% ggplot(aes(x = Temperature, color = Sample))  +
+                        geom_line(aes(y=prValue)) +
+                        geom_point(aes(y = Value)) +
+                        labs(x = "Temperature",
+                             y = "Value",
+                             title = .$id) +
+                        theme_minimal()
+        gp
+      }) -> plots
+do.call(grid.arrange, c(plots$plot, list(ncol=2)))
+
+```
+
+
+
+
+

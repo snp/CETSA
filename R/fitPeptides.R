@@ -11,7 +11,7 @@ fitPeptides <-
 
     data %>%
       group_by(id) %>%
-#      partition(id, cluster=cl) %>%
+      #      partition(id, cluster=cl) %>%
       do({
         pepdata <- .
         pid <- unique(pepdata$id)
@@ -43,15 +43,18 @@ fitPeptides <-
                 Temperature = xtemps,
                 prValue = predict(.$model[[1]], list(x = xtemps))
               )) %>%
-              full_join(pepdata) %>%
+              full_join(pepdata, by = c("Sample", "Temperature")) %>%
               arrange(Sample, Temperature)
             if (!dir.exists(file.path(resultPath, "plots")))
               dir.create(file.path(resultPath, "plots"))
             gg1 <-
-              pepdata_m %>% ggplot(aes(x = Temperature, color = Sample))  + geom_line(aes(y =
-                                                                                            prValue)) + geom_point(aes(y = Value)) + labs(x = "Temperature",
-                                                                                                                                          y = "Value",
-                                                                                                                                          title = .$id) + theme_minimal()
+              pepdata_m %>% ggplot(aes(x = Temperature, color = Sample))  +
+                              geom_line(aes(y=prValue)) +
+                              geom_point(aes(y = Value)) +
+                              labs(x = "Temperature",
+                                   y = "Value",
+                                   title = .$id) +
+                              theme_minimal()
             gg1 <- gg1 + annotation_custom(
               tableGrob(
                 result %>% mutate(

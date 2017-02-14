@@ -21,8 +21,6 @@ normalizeTR <-
     message("Proteins for normalization: ", nrow(good_proteins))
 
     models <- data %>%
-      full_join(inner_join(lowPass, highPass, by=c("Sample","id")), by=c("Sample","id")) %>%
-      filter(minVal > limits$low[2], maxVal < limits$high[2]) %>%
       filter(id %in% good_proteins$id) %>%
       group_by(Sample, Temperature) %>%
       summarize(total = mean(Value)) %>%
@@ -46,8 +44,7 @@ normalizeTR <-
                  Predicted = predict(model_best, temps))
 
     data %>%
-      full_join(inner_join(lowPass, highPass, by=c("Sample","id")), by=c("Sample","id")) %>%
-      filter(minVal > limits$low[2], maxVal < limits$high[2]) %>%
+      filter(id %in% good_proteins$id) %>%
       group_by(Sample, Temperature) %>%
       summarize(total = mean(Value)) %>%
       ungroup() %>%
@@ -55,5 +52,6 @@ normalizeTR <-
       mutate(norm_coef = Predicted / total) %>%
       select(Sample, Temperature, norm_coef) %>%
       full_join(data, by=c("Sample","Temperature")) %>%
-      mutate(Value = Value * norm_coef)
+      mutate(Value = Value * norm_coef) %>%
+      mutate(normProtein = id %in% good_proteins$id)
   }

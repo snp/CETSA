@@ -74,5 +74,6 @@ analyzeTR <- function(filename = "proteinGroups.txt",
     filter((sigma_treatment + sigma_vehicle) < 0.9) %>%
     ggplot(aes(Tm_diff)) + geom_histogram(binwidth = 0.2)
   ggsave(file.path(resultPath, "Tm_diff_histogram.pdf"), device = 'pdf')
+  render(system.file("Rmd/Report.Rmd", package =getPackageName()), envir= parent.frame(), output_file=file.path(resultPath,"CETSA_report.html"))
   message("Done!")
 }
