@@ -1,7 +1,7 @@
 importTR_MQ <- function(proteinGroups="proteinGroups.txt",
                         idVar="Majority protein IDs",
                         qPrefix="Reporter intensity corrected",
-                        temperatures=c(37,41,44,47,50,53,57,61,64,67)){
+                        temperatures=c(37,41,44,47,50,53,56,59,63,67)){
 
   # Read datafile
   data <- read_tsv(proteinGroups) %>%

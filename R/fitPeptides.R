@@ -11,7 +11,7 @@ fitPeptides <-
 
     data %>%
       group_by(id) %>%
-      #      partition(id, cluster=cl) %>%
+      # partition(id, cluster=cl) %>%
       do({
         pepdata <- .
         pid <- unique(pepdata$id)
@@ -73,6 +73,11 @@ fitPeptides <-
                      'pdf')
           }
         }
-        as.data.frame(result)
-      })
+        result
+      }) -> fitted
+    message("fitted")
+    fitted %>% glimpse()
+    message("collected")
+    fitted %>% collect() %>% glimpse()
+    fitted
   }

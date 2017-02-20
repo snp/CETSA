@@ -23,7 +23,8 @@ analyzeTR <- function(filename = "proteinGroups.txt",
                       idVar = "Majority protein IDs",
                       qPrefix = "Reporter intensity corrected",
                       temperatures = c(37, 41, 44, 47, 50, 53, 57, 61, 64, 67),
-                      resultColumns = c("Protein names", "Gene names", "Unique peptides")) {
+                      resultColumns = c("Protein names", "Gene names", "Unique peptides"),
+                      normLimits = list("low" = c(42, 0.8), "high" = c(60, 0.2))) {
   if (!dir.exists(resultPath))
     dir.create(resultPath, recursive = TRUE)
 
@@ -34,13 +35,12 @@ analyzeTR <- function(filename = "proteinGroups.txt",
     qPrefix = qPrefix,
     temperatures = temperatures
   )
-
   save(data, file = file.path(resultPath, "data.RData"))
   #data <- importTR_MQ("../TPPQC/NTUB1P_MTX/peptides_M28.txt", idVar = "Sequence", qPrefix="Reporter intensity corrected")
 
   message("Normalizing data")
   normdata <-
-    normalizeTR(data, limits = list("low" = c(42, 0.8), "high" = c(60, 0.2)))
+    normalizeTR(data, limits = normLimits)
   save(normdata, file = file.path(resultPath, "normdata.RData"))
 
   message("Fitting individual proteins")
@@ -74,6 +74,6 @@ analyzeTR <- function(filename = "proteinGroups.txt",
     filter((sigma_treatment + sigma_vehicle) < 0.9) %>%
     ggplot(aes(Tm_diff)) + geom_histogram(binwidth = 0.2)
   ggsave(file.path(resultPath, "Tm_diff_histogram.pdf"), device = 'pdf')
-  render(system.file("Rmd/Report.Rmd", package =getPackageName()), envir= parent.frame(), output_file=file.path(resultPath,"CETSA_report.html"))
+  render(system.file("Rmd/Report.Rmd", package =getPackageName()), envir= sys.frame(sys.nframe()), output_file=file.path(resultPath,"CETSA_report.html"))
   message("Done!")
 }
