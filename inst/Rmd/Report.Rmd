@@ -115,7 +115,7 @@ result %>%
 if(T)
   ress_filtered$id <- sub("(.*)","<a href='plots/fit_\\1.pdf'>\\1</a>", ress_filtered$id)
 ress_filtered %>% 
-           datatable(escape = FALSE) %>% 
+           datatable(escape = FALSE,  filter = 'top') %>% 
            formatRound(grep('_', names(ress_filtered), value=T),digits=2)
         
 ```
@@ -164,7 +164,7 @@ normdata %>%
           )) %>%
           full_join(pepdata, by = c("Sample", "Temperature")) %>%
           arrange(Sample, Temperature)
-        gp <- pepdata_m %>% ggplot(aes(x = Temperature, color = Sample))  +
+        gp <- pepdata_m %>% mutate(Type=ifelse(Sample %in% treatment, "Treatment","Vehicle")) %>%  ggplot(aes(x = Temperature, group=Sample, color = Type))  +
                         geom_line(aes(y=prValue)) +
                         geom_point(aes(y = Value)) +
                         labs(x = "Temperature",

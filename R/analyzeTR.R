@@ -34,7 +34,7 @@ analyzeTR <- function(filename = "proteinGroups.txt",
     idVar = idVar,
     qPrefix = qPrefix,
     temperatures = temperatures
-  )
+  ) %>% filter(Sample %in% c(vehicle, treatment))
   save(data, file = file.path(resultPath, "data.RData"))
   #data <- importTR_MQ("../TPPQC/NTUB1P_MTX/peptides_M28.txt", idVar = "Sequence", qPrefix="Reporter intensity corrected")
 
@@ -45,7 +45,7 @@ analyzeTR <- function(filename = "proteinGroups.txt",
 
   message("Fitting individual proteins")
   fitted <-
-    fitPeptides(normdata, plotCurves = plotCurves, resultPath = resultPath)
+    fitPeptides(normdata, plotCurves = plotCurves, resultPath = resultPath, vehicle=vehicle, treatment=treatment)
   save(fitted, file = file.path(resultPath, "fitted.RData"))
 
   message("Summarizing results")
