@@ -111,7 +111,7 @@ result %>%
 #  filter(Tm_vehicle_pval > 0.01, Tm_treatment_pval > 0.01) %>% 
 #  filter(Tm_pval < 0.1, Tm_pval_naive < 0.4) %>% 
   arrange(Tm_pval) %>% 
-  select(id, matches("^Tm_.*"), matches(".*_estimate$"), matches("_rSquared$")) -> ress_filtered
+  select(id, one_of(resultColumns), matches("^Tm_.*"), matches(".*_estimate$"), matches("_rSquared$")) -> ress_filtered
 if(T)
   ress_filtered$id <- sub("(.*)","<a href='plots/fit_\\1.pdf'>\\1</a>", ress_filtered$id)
 ress_filtered %>% 

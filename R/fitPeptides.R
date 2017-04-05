@@ -76,7 +76,7 @@ fitPeptides <-
                   V = sprintf("%.2f", estimate),
                   se = sprintf("%.2f", std.error),
                   R2 = sprintf("%.2f", rSquared)
-                ) %>% select(term, V, se) %>% filter(term=='Tm'),
+                )  %>% filter(term=='Tm')%>% select( V, se),
                 rows = result$Sample[result$term == 'Tm']
               ),
               xmin = 45,
