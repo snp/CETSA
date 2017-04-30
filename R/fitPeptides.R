@@ -70,22 +70,15 @@ fitPeptides <-
                                    y = "Value",
                                    title = .$id) +
                               theme_minimal()
-            gg1 <- gg1 + annotation_custom(
-              tableGrob(
+            gg2 <- tableGrob(
                 result %>% mutate(
                   V = sprintf("%.2f", estimate),
                   se = sprintf("%.2f", std.error),
                   R2 = sprintf("%.2f", rSquared)
-                )  %>% filter(term=='Tm')%>% select( V, se),
-                rows = result$Sample[result$term == 'Tm']
-              ),
-              xmin = 45,
-              xmax = 80,
-              ymin = -0.5,
-              ymax = 2
-            )
-            ggsave(file.path(resultPath, "plots", sprintf("fit_%s.pdf", .$id)), gg1, device =
-                     'pdf')
+                )  %>% filter(term=='Tm')%>% select(Sample, V, se) %>% unite(Val, V, se, sep="±") %>% spread(Sample, Val), theme=ttheme_minimal(base_size=6), rows="")
+            m1 <- arrangeGrob(gg1, gg2,  heights=c(13,1))
+            ggsave(file.path(resultPath, "plots", sprintf("fit_%s.pdf", .$id)), m1, device =
+                     'pdf', width=8, height=7)
           }
         }
         result
