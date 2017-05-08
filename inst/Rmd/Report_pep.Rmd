@@ -123,14 +123,15 @@ ress_filtered %>%
 
 ### Melting curves
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=15}
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=15,eval=TRUE}
 result %>%
+  ungroup() %>% 
   filter(N_vehicle == length(vehicle), N_treatment==length(treatment)) %>% 
 #  filter(Tm_vehicle_pval > 0.01, Tm_treatment_pval > 0.01) %>% 
   arrange(Tm_pval) %>% slice(1:20) -> ress_solid
 unique(ress_solid$id) -> protein_hits
 
-normdata %>%
+protdata %>%
   filter(id %in% protein_hits) %>% 
         group_by(id) %>%
       #      partition(id, cluster=cl) %>%

@@ -22,4 +22,5 @@ Imports:
     stats,
     stringr,
     utils,
+    farms,
     rmarkdown
