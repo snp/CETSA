@@ -78,7 +78,7 @@ fitPeptides <-
                 )  %>% filter(term=='Tm')%>% select(Sample, V, se) %>% unite(Val, V, se, sep="±") %>% spread(Sample, Val), theme=ttheme_minimal(base_size=6), rows="")
             m1 <- arrangeGrob(gg1, gg2,  heights=c(13,1))
             ggsave(file.path(resultPath, "plots", sprintf("fit_%s.pdf", .$id)), m1, device =
-                     'pdf', width=4, height=3)
+                     'pdf', width=6, height=4)
           }
         }
         result
