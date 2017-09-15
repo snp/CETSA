@@ -6,10 +6,11 @@ fitPeptide <- function(pepdata, startPars=c("Tm"=50, "Pl"=0, "b" = 0.05)){
       yVec = .$Value
     ) %>%
     filter(class(model)=='nls') %>%
-    group_by(Sample) %>%
-    summarize(
-      sigma=sigma(model[[1]]),
-      model=model,
-      rSquared = rSquared(model[[1]], yVec[[1]])) %>%
+    rowwise() %>%
+    summarise(
+      Sample=Sample,
+      sigma=sigma(model),
+      rSquared = rSquared(model, yVec),
+      model=model) %>%
     arrange(sigma)
 }

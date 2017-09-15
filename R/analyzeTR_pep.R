@@ -58,7 +58,9 @@ analyzeTR_pep <- function(filename = "peptides.txt",
         x_ <- unique(pdata$Temperature)
         y_ <- pdata %>% select(id, Temperature, Value) %>% spread(Temperature, Value) %>% select(-id)
         for(fc in names(y_)){
-          y_[,fc] <- zoo::na.locf(y_[,fc])
+          col_ <- y_[,fc]
+          col_[col_<1e-4] <- NA
+          y_[,fc] <- zoo::na.locf(col_)
         }
         y_ <- as.matrix(y_)
 
