@@ -27,12 +27,13 @@ normalizeTR <-
       do(model = fitSigmoid(.[, 2:3]),
          yVec = .$total) %>%
       filter(class(model) == 'nls') %>%
-#      group_by(Sample) %>%      
-      rowwise() %>% 
+#      group_by(Sample) %>%
+      ungroup() %>%
+      rowwise() %>%
       summarise(
         sigma = sigma(model),
         Rsq = rSquared(model, yVec),
-        model = model
+        model = list(model)
       ) %>%
       arrange(desc(Rsq))
 
