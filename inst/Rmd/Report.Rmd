@@ -39,9 +39,8 @@ normdata %>%
 
 models <- fitPeptide(dd)
 model <- models$model[[1]]
-rSq <- models$rSquared[[1]]
-ress<-tidy(model)
-ress[,'rSquared'] <- rSq
+rSq = models$rSquared[[1]]
+ress<-data.frame(term=names(coef(model)), value=coef(model))
 
 temps <- unique(dd$Temperature)
 xtemps <- seq(min(temps), max(temps), length.out = 100)
@@ -60,11 +59,9 @@ gg1 <-
 gg1 <- gg1 + annotation_custom(
   tableGrob(
     ress %>% mutate(
-      V = sprintf("%.2f", estimate),
-      se = sprintf("%.2f", std.error),
-      R2 = sprintf("%.2f", rSquared)
-    ) %>% select(V, se),
-    rows = ress$term
+      V = sprintf("%.2f", value),
+    ) %>% select(V),
+    rows = as.character(ress$term)
   ),
   xmin = 45,
   xmax = 80,
