@@ -23,7 +23,7 @@ normalizeTR <-
     models <- data %>%
       filter(id %in% good_proteins$id) %>%
       group_by(Sample, Temperature) %>%
-      summarize(total = mean(Value)) %>%
+      summarize(total = mean(Value, na.rm=T)) %>%
       do(model = fitSigmoid(.[, 2:3]),
          yVec = .$total) %>%
       filter(class(model) == 'nls') %>%

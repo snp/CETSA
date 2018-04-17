@@ -53,22 +53,30 @@ analyzeTR_pep <- function(filename = "peptides.txt",
       res <- data.frame()
       pdata <- .
       if(nrow(pdata)>1){
-        ppid = .$pid[1]
-        s = .$Sample[1]
+        ppid = pdata$pid[1]
+        s = pdata$Sample[1]
         x_ <- unique(pdata$Temperature)
         y_ <- pdata %>% select(id, Temperature, Value) %>% spread(Temperature, Value) %>% select(-id)
+        x__ <- c()
+        y__ <- data.frame(row.names = rownames(y_))
         for(fc in names(y_)){
           col_ <- y_[,fc]
           col_[col_<1e-4] <- NA
-          y_[,fc] <- zoo::na.locf(col_)
+          col__ <- zoo::na.locf(col_)
+          if(sum(is.na(col_))==0){
+            y__[,fc] <- col__
+            x__ <- c(x__, as.numeric(fc))
+          }
+          
         }
-        y_ <- as.matrix(y_)
-
+        y_ <-as.matrix(y__)
+        
+        
         y_ <- 2**y_
         farms.res <- try(generateExprVal.method.farms(y_,weighted.mean = T))
 
         if(class(farms.res) != "try-error")
-          res <- data.frame(Sample=s, pid=ppid, Temperature=x_, Value=farms.res$exprs)
+          res <- data.frame(Sample=s, pid=ppid, Temperature=x__, Value=farms.res$exprs)
       }
       res
     }) -> protdata
