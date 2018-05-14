@@ -15,7 +15,7 @@ importTR_MQ <- function(proteinGroups="proteinGroups.txt",
     mutate(Temperature=temperatures[Channel+1])
   # Calculate ratios from reporter intensities
   data %>%
-    filter(Temperature<42) %>%
+    filter(Temperature<45) %>%
     group_by(Sample, id) %>%
     summarize(lowT = mean(Value)) -> lowT
   data <- data %>%

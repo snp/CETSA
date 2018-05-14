@@ -1,5 +1,6 @@
 normalizeTR <-
   function(data, limits = list("low" = c(42, 0.8), "high" = c(60, 0.2))) {
+    data %>% group_by(id) %>% summarize(n=sum(!is.na(Value))) %>% mutate(all_points = (n==max(n))) -> npoints
     lowPass <- data %>%
       filter(Temperature <= limits$low[1]) %>%
       group_by(Sample, id) %>%
@@ -14,9 +15,8 @@ normalizeTR <-
       full_join(highPass, by = c("Sample", "id")) %>%
       mutate(good = (minVal > limits$low[2]) &
                (maxVal < limits$high[2])) %>%
-      group_by(id) %>%
-      summarize(score = sum(good)) %>%
-      filter(score == numSamples) -> good_proteins
+      left_join(npoints, by='id') %>%
+      filter(all_points) -> good_proteins
 
     message("Proteins for normalization: ", nrow(good_proteins))
 

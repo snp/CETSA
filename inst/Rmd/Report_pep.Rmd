@@ -132,6 +132,7 @@ result %>%
 unique(ress_solid$id) -> protein_hits
 
 protdata %>%
+  mutate(id=pid) %>% 
   filter(id %in% protein_hits) %>% 
         group_by(id) %>%
       #      partition(id, cluster=cl) %>%

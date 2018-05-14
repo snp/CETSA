@@ -80,11 +80,13 @@ analyzeTR_pep <- function(filename = "peptides.txt",
       }
       res
     }) -> protdata
-  protdata %>%
-    left_join(
-      normdata %>%select(pid,one_of(resultColumns)),
-      by="pid"
-    )
+  if(length(resultColumns) > 0){
+    protdata %>%
+      left_join(
+        normdata %>%select(pid,one_of(resultColumns)),
+        by="pid"
+      )
+  }
   save(protdata, file = file.path(resultPath, "proteins.RData"))
   protdata <- protdata %>%ungroup() %>%  mutate(id=pid)
   # normdata <- protdata
@@ -95,12 +97,13 @@ analyzeTR_pep <- function(filename = "peptides.txt",
   save(fitted, file = file.path(resultPath, "fitted.RData"))
 
   message("Summarizing results")
-  result <- summarizeTR(fitted, vehicle=vehicle, treatment=treatment)
+  result <- summarizeTR(fitted, vehicle=vehicle, treatment=treatment) %>% ungroup()
 
-  result <- result %>%
-    mutate(pid=id) %>%
-    left_join(data %>% select(pid, one_of(resultColumns)) %>% distinct(), by='pid')
-
+  if(length(resultColumns) > 0){
+    result <- result %>%
+      mutate(pid=id) %>%
+      left_join(data %>% select(pid, one_of(resultColumns)) %>% distinct(), by='pid')
+  }
   message("Saving results to ", resultPath)
   result %>% write_csv(file.path(resultPath, "result_all.csv"))
   save(result, file = file.path(resultPath, "result.RData"))

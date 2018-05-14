@@ -108,7 +108,11 @@ result %>%
 ## Result table
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
 require(DT)
+if(length(resultColumns) == 0)
+  resultColumns == "id"
+
 result %>%
   filter(N_vehicle == length(vehicle), N_treatment==length(treatment)) %>% 
   filter(Tm_vehicle_se < 0.5*Tm_vehicle, Tm_treatment_se < 0.5*Tm_treatment) %>% 
@@ -139,7 +143,7 @@ result %>%
 #  filter(Tm_vehicle_pval > 0.01, Tm_treatment_pval > 0.01) %>% 
   arrange(Tm_pval) %>% slice(1:20) -> ress_solid
 unique(ress_solid$id) -> protein_hits
-
+print(protein_hits)
 normdata %>%
   filter(id %in% protein_hits) %>% 
         group_by(id) %>%
