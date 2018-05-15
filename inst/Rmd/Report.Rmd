@@ -1,6 +1,6 @@
 ---
-title: "TPP analysis report"
-author: "Alexey L. Chernobrovkin"
+title: "CETSA-MS, melt curve analysis report"
+#author: "Alexey L. Chernobrovkin"
 #date: "2/14/2017"
 output: 
   html_document:
@@ -88,11 +88,14 @@ result %>%
 ### Volcanoo plot
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
-result %>%
+gp <- result %>%
   filter(Tm_se < Tm_vehicle) %>%
   filter(Tm_se < Tm_treatment) %>%
   filter((sigma_treatment + sigma_vehicle) < 0.9) %>%
-  ggplot(aes(Tm_diff, y=-log10(Tm_pval))) +  geom_point() + theme_bw() 
+  ggplot(aes(x = Tm_diff, 
+             y=-log10(Tm_pval), 
+             text=sprintf("<a href='plots/fit_%s.pdf'>%s</a>", id, id))) +  geom_point() + theme_bw() 
+plotly::ggplotly(gp, tooltip = 'text')
 ```
 
 ### Pval vs Pval
