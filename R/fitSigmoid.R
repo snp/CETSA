@@ -30,3 +30,38 @@ fitSigmoid <- function(data, startPars=c("Tm"=50, "Pl"=0, "b" = 0.05),maxAttempt
   }
   return(m)
 }
+
+fitSigmoid_notscaled <- function(data, startPars=c("A" = NA,"Tm"=50, "Pl"=NA, "b" = 0.05),maxAttempts=100){
+  fctStr <- "A / (1+exp((x-Tm)/b/x)) + Pl"
+  fitFct <- as.formula(paste("y ~", fctStr))
+  xVec <- data[[1]]
+  yVec <- data[[2]]
+  varyPars <- 0
+
+  attempts <- 0
+  repeatLoop <- TRUE
+  startPars['A'] <- ifelse(is.na(startPars[['A']]), max(yVec), startPars[['A']])
+  startPars['Pl'] <- ifelse(is.na(startPars[['Pl']]), min(yVec), startPars[['Pl']])
+
+  ## Check if number of non-missing values is sufficient
+  ## (NLS can only handle data with at least three non-missing values)
+  validValues <- !is.na(yVec)
+  if (sum(validValues) <=2){
+    m <- NA
+    class(m) <- "try-error"
+  } else{
+    ## Perform fit
+    while(repeatLoop & attempts < maxAttempts){
+      parTmp <- startPars * (1 + varyPars*(runif(1, -0.2, 0.2)))
+      m <- try(nls(formula=fitFct, start=parTmp, data=list(x=xVec, y=yVec), na.action=na.exclude,
+                   algorithm="port",lower=c(10, 30.0, 0, 1e-8)),
+               silent=TRUE)
+      attempts <- attempts + 1
+      varyPars <- 1
+      if (class(m)!="try-error") {
+        repeatLoop <- FALSE
+      }
+    }
+  }
+  return(m)
+}

@@ -28,6 +28,8 @@ Proteins selected for normalization: `r length(unique(normdata$id[normdata$normP
 
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
+if(!("Gene" %in% names(result) ))
+   result <- result %>% mutate(Gene = id)
 normdata %>%
   filter(normProtein) %>% 
   group_by(Sample, Temperature) %>%
@@ -94,7 +96,7 @@ gp <- result %>%
   filter((sigma_treatment + sigma_vehicle) < 0.9) %>%
   ggplot(aes(x = Tm_diff, 
              y=-log10(Tm_pval), 
-             text=sprintf("<a href='plots/fit_%s.pdf'>%s</a>", id, id))) +  geom_point() + theme_bw() 
+             text=sprintf("<a href='plots/fit_%s.pdf'>%s</a>", id, Gene))) +  geom_point() + theme_bw() 
 plotly::ggplotly(gp, tooltip = 'text')
 ```
 
@@ -117,7 +119,7 @@ if(length(resultColumns) == 0)
   resultColumns == "id"
 
 result %>%
-  filter(N_vehicle == length(vehicle), N_treatment==length(treatment)) %>% 
+  # filter(N_vehicle == length(vehicle), N_treatment==length(treatment)) %>% 
   filter(Tm_vehicle_se < 0.5*Tm_vehicle, Tm_treatment_se < 0.5*Tm_treatment) %>% 
 #  filter(Tm_vehicle_pval > 0.01, Tm_treatment_pval > 0.01) %>% 
 #  filter(Tm_pval < 0.1, Tm_pval_naive < 0.4) %>% 
@@ -140,11 +142,11 @@ ress_filtered %>%
 
 ## Melting curves
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=7, fig.height=15}
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=15}
 result %>%
   filter(N_vehicle == length(vehicle), N_treatment==length(treatment)) %>% 
 #  filter(Tm_vehicle_pval > 0.01, Tm_treatment_pval > 0.01) %>% 
-  arrange(Tm_pval) %>% slice(1:20) -> ress_solid
+  arrange(Tm_pval) %>% slice(1:48) -> ress_solid
 unique(ress_solid$id) -> protein_hits
 print(protein_hits)
 normdata %>%
@@ -188,10 +190,10 @@ normdata %>%
                         labs(x = "Temperature",
                              y = "Value",
                              title = .$id) +
-                        theme_minimal()
+                        theme_minimal() + theme(legend.position = 'none')
         gp
       }) -> plots
-do.call(grid.arrange, c(plots$plot, list(ncol=2)))
+do.call(grid.arrange, c(plots$plot, list(ncol=6)))
 
 ```
 
